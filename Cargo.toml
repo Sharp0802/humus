@@ -2,6 +2,10 @@
 name = "humus"
 version = "0.0.1"
 edition = "2021"
+license = "MIT"
+keywords = ["web", "server"]
+authors = ["Yeong-won Seo <syw0802@proton.me>"]
+
 
 [dependencies]
 chrono = "0"
