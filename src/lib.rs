@@ -11,9 +11,9 @@
 //! - Asynchronous Design
 //!
 
-mod terminal;
-mod route;
-mod response;
+pub mod terminal;
+pub mod route;
+pub mod response;
 
 use http_body_util::Full;
 use hyper::body::{Bytes, Incoming};
