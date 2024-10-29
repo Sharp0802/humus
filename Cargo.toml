@@ -4,6 +4,7 @@ version = "0.0.1"
 edition = "2021"
 license = "MIT"
 keywords = ["web", "server"]
+description = "An intuitive and robust web server framework, made with rust, based on hyper"
 authors = ["Yeong-won Seo <syw0802@proton.me>"]
 
 exclude = [
