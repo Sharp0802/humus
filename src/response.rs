@@ -9,13 +9,13 @@ lazy_static! {
 
 #[derive(Clone)]
 struct ResponseConfig {
-    access_control_allow_origin: Option<String>,
-    access_control_allow_methods: Option<String>,
-    access_control_allow_headers: Option<String>
+    pub access_control_allow_origin: Option<String>,
+    pub access_control_allow_methods: Option<String>,
+    pub access_control_allow_headers: Option<String>
 }
 
 impl ResponseConfig {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             access_control_allow_origin: None,
             access_control_allow_methods: None,

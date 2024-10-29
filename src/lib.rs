@@ -15,7 +15,6 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::net::TcpListener;
-use terminal::log;
 use crate::response::ResponseBuilder;
 use crate::route::{configure_all, match_route, shutdown_all, Route};
 
@@ -33,7 +32,7 @@ where
 }
 
 
-pub(crate) struct App {
+pub struct App {
     port: u16,
     shutdown_duration: Duration,
     root_route: Arc<dyn Route + Send + Sync>
@@ -41,7 +40,7 @@ pub(crate) struct App {
 
 impl App {
 
-    pub(crate) fn new(port: u16, shutdown_duration: Duration, root_route: Arc<dyn Route + Send + Sync>) -> Self {
+    pub fn new(port: u16, shutdown_duration: Duration, root_route: Arc<dyn Route + Send + Sync>) -> Self {
         Self {
             port,
             shutdown_duration,
@@ -75,7 +74,7 @@ impl App {
         shutdown_all(self.root_route.clone()).await
     }
 
-    pub(crate) async fn main(self: Arc<Self>) -> Result<(), Box<dyn Error + Send + Sync>> {
+    pub async fn main(self: Arc<Self>) -> Result<(), Box<dyn Error + Send + Sync>> {
 
         self.configure().await?;
 

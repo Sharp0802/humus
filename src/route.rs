@@ -7,7 +7,7 @@ use hyper::{Request, Response};
 type Error = dyn std::error::Error + Send + Sync;
 
 #[async_trait]
-pub(crate) trait Route {
+pub trait Route {
     fn name(&self) -> &str;
     fn children(&self) -> Vec<Arc<dyn Route + Send + Sync>> { vec![] }
 

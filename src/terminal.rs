@@ -1,4 +1,5 @@
 
+#[macro_export]
 macro_rules! log {
     (fail $($args:expr),+) => {
         eprintln!(
@@ -21,5 +22,3 @@ macro_rules! log {
             format!($($args),+));
     };
 }
-
-pub(crate) use log;
