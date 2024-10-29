@@ -1,3 +1,16 @@
+#![warn(missing_docs)]
+
+//!
+//! # humus-terra
+//!
+//! humus-terra is an **intuitive** and **robust** framework for writing web-servers based on HTTP2.
+//!
+//! # Features
+//!
+//! - HTTP/2
+//! - Asynchronous Design
+//!
+
 mod terminal;
 mod route;
 mod response;
@@ -32,6 +45,7 @@ where
 }
 
 
+/// An abstraction for hosting and routing.
 pub struct App {
     port: u16,
     shutdown_duration: Duration,
@@ -40,6 +54,23 @@ pub struct App {
 
 impl App {
 
+    ///
+    /// Create new application with specified settings
+    ///
+    /// - *port*: Port to be used for hosting application
+    /// - *shutdown_duration*: Timeout from `SIGINT` for finalising resources and connections
+    /// - *root_route*: Implementation of root route
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::time::Duration;
+    /// use humus_terra::App;
+    /// use your_route::YourRoute;
+    ///
+    /// let app = App::new(8080, Duration::from_secs(10), YourRoute);
+    /// ```
+    ///
     pub fn new(port: u16, shutdown_duration: Duration, root_route: Arc<dyn Route + Send + Sync>) -> Self {
         Self {
             port,
@@ -74,6 +105,32 @@ impl App {
         shutdown_all(self.root_route.clone()).await
     }
 
+    /// Run the configured application.
+    ///
+    /// This function executes the main loop of the application. It will block
+    /// until the application is shutdown. If the application is triggered
+    /// with `SIGINT`, it will exit the main loop and finalise resources.
+    /// Instead of terminating the entire programme, the invocation of this
+    /// function will simply return after finalisation.
+    ///
+    /// If the application fails to close all connections within the specified
+    /// time limit, it will log a message but will not panic or forcibly shut
+    /// down the system.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use std::time::Duration;
+    /// use humus_terra::App;
+    /// use your_route::YourRoute;
+    ///
+    /// let app = App::new(8080, Duration::from_secs(10), YourRoute);
+    ///
+    /// async move {
+    ///     app.main().await?;
+    /// }
+    /// ```
+    ///
     pub async fn main(self: Arc<Self>) -> Result<(), Box<dyn Error + Send + Sync>> {
 
         self.configure().await?;
