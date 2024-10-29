@@ -6,6 +6,10 @@ license = "MIT"
 keywords = ["web", "server"]
 authors = ["Yeong-won Seo <syw0802@proton.me>"]
 
+exclude = [
+    ".gitignore",
+    ".github"
+]
 
 [dependencies]
 chrono = "0"
