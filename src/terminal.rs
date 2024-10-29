@@ -8,7 +8,7 @@
 ///
 /// ## Usage
 ///
-/// ```rust
+/// ```ignore
 /// use humus_terra::log;
 ///
 /// log!(<severity> <format> <arguments>...);

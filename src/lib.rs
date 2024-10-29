@@ -63,12 +63,11 @@ impl App {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use std::time::Duration;
     /// use humus_terra::App;
-    /// use your_route::YourRoute;
     ///
-    /// let app = App::new(8080, Duration::from_secs(10), YourRoute);
+    /// let app = App::new(8080, Duration::from_secs(10), ...);
     /// ```
     ///
     pub fn new(port: u16, shutdown_duration: Duration, root_route: Arc<dyn Route + Send + Sync>) -> Self {
@@ -119,15 +118,15 @@ impl App {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```ignore
+    /// use std::sync::Arc;
     /// use std::time::Duration;
     /// use humus_terra::App;
-    /// use your_route::YourRoute;
     ///
-    /// let app = App::new(8080, Duration::from_secs(10), YourRoute);
+    /// let app = App::new(8080, Duration::from_secs(10), ...);
     ///
     /// async move {
-    ///     app.main().await?;
+    ///     App::main(Arc::new(app)).await?;
     /// }
     /// ```
     ///
