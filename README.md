@@ -1,4 +1,4 @@
-# HUMUS
+# humus-terra
 
 [![Rust](https://github.com/Sharp0802/humus/actions/workflows/rust.yml/badge.svg)](https://github.com/Sharp0802/humus/actions/workflows/rust.yml)
 
