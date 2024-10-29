@@ -8,7 +8,7 @@ use http_body_util::Full;
 use hyper::body::{Bytes, Incoming};
 use hyper::{Request, Response};
 
-type Error = dyn std::error::Error + Send + Sync;
+pub type Error = dyn std::error::Error + Send + Sync;
 
 /// An abstraction for routes
 #[async_trait]
