@@ -1,3 +1,7 @@
+//!
+//! A module that provides abstraction for routes and its helpers
+//!
+
 use std::sync::Arc;
 use async_trait::async_trait;
 use http_body_util::Full;
@@ -6,18 +10,26 @@ use hyper::{Request, Response};
 
 type Error = dyn std::error::Error + Send + Sync;
 
+/// An abstraction for routes
 #[async_trait]
 pub trait Route {
+    /// Get name of route
     fn name(&self) -> &str;
+
+    /// Get children of route
     fn children(&self) -> Vec<Arc<dyn Route + Send + Sync>> { vec![] }
 
+    /// Configure route and Initialise its resources
     async fn configure(&self) -> Result<(), Box<Error>> { Ok(()) }
+
+    /// Shutdown route and Finalise its resources
     async fn shutdown(&self) -> Result<(), Box<Error>> { Ok(()) }
 
+    /// Handle request asynchronously
     async fn handle(&self, request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Box<Error>>;
 }
 
-pub async fn configure_all(root: Arc<dyn Route + Send + Sync>) -> Result<(), Box<Error>> {
+pub(crate) async fn configure_all(root: Arc<dyn Route + Send + Sync>) -> Result<(), Box<Error>> {
 
     root.configure().await?;
     for route in root.children() {
@@ -27,7 +39,7 @@ pub async fn configure_all(root: Arc<dyn Route + Send + Sync>) -> Result<(), Box
     Ok(())
 }
 
-pub async fn shutdown_all(root: Arc<dyn Route + Send + Sync>) -> Result<(), Box<Error>> {
+pub(crate) async fn shutdown_all(root: Arc<dyn Route + Send + Sync>) -> Result<(), Box<Error>> {
 
     root.shutdown().await?;
     for route in root.children() {
@@ -37,7 +49,7 @@ pub async fn shutdown_all(root: Arc<dyn Route + Send + Sync>) -> Result<(), Box<
     Ok(())
 }
 
-pub fn match_route(path: &str, root: Arc<dyn Route + Send + Sync>) -> Option<Arc<dyn Route + Send + Sync>> {
+pub(crate) fn match_route(path: &str, root: Arc<dyn Route + Send + Sync>) -> Option<Arc<dyn Route + Send + Sync>> {
 
     let parts = path.split("/").skip(1).collect::<Vec<&str>>();
 
