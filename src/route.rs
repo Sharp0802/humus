@@ -104,8 +104,8 @@ mod tests {
             vec![ self.route_a.clone() ]
         }
 
-        async fn handle(&self, request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Box<Error>> {
-            todo!()
+        async fn handle(&self, _request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Box<Error>> {
+            panic!()
         }
     }
 
@@ -117,8 +117,8 @@ mod tests {
             vec![ self.route_b.clone() ]
         }
 
-        async fn handle(&self, request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Box<Error>> {
-            todo!()
+        async fn handle(&self, _request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Box<Error>> {
+            panic!()
         }
     }
 
@@ -126,8 +126,8 @@ mod tests {
     impl Route for BRoute {
         fn name(&self) -> &str { "b" }
 
-        async fn handle(&self, request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Box<Error>> {
-            todo!()
+        async fn handle(&self, _request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Box<Error>> {
+            panic!()
         }
     }
 
