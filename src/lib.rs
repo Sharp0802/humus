@@ -178,6 +178,8 @@ impl App {
             _ = tokio::time::sleep(self.shutdown_duration) => {
                 log!(info "Timed out waiting for connections");
             }
-        };
+        }
+        
+        Ok(())
     }
 }
