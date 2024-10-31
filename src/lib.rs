@@ -166,6 +166,7 @@ impl App {
                 _ = &mut signal => {
                     log!(info "Shutting down...");
                     self.shutdown().await?;
+                    break;
                 }
             }
         }
