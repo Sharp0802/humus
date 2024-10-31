@@ -2,22 +2,21 @@
 //! A module that contains abstraction of stateless tokens
 //!
 
-use std::ops::Deref;
+use crate::encrypt::Aes;
+use crate::error::Error;
+use crate::response::ResponseBuilder;
 use chrono::{DateTime, Utc};
 use cookie::CookieBuilder;
 use headers::{Cookie, HeaderMapExt};
-use http_body_util::Full;
-use hyper::body::Bytes;
+use hyper::body::Incoming;
 use hyper::header::SET_COOKIE;
 use hyper::http::response::Builder;
 use hyper::Request;
 use lazy_static::lazy_static;
 use rand::random;
 use serde::{Deserialize, Serialize};
+use std::ops::Deref;
 use tokio::sync::RwLock;
-use crate::encrypt::Aes;
-use crate::error::Error;
-use crate::response::ResponseBuilder;
 
 lazy_static!{
     static ref CONFIG: RwLock<Option<TokenConfig>> = RwLock::new(None);
@@ -181,7 +180,7 @@ pub struct Session {
 }
 
 impl Session {
-    fn read_cookie(key: &str, request: &Request<Full<Bytes>>) -> Option<String> {
+    fn read_cookie(key: &str, request: &Request<Incoming>) -> Option<String> {
         let cookie = request.headers().typed_get::<Cookie>()?;
         Some(cookie.get(key)?.to_string())
     }
@@ -201,7 +200,7 @@ impl Session {
     ///
     /// Retrieve session information from request
     ///
-    pub fn from_request(request: &Request<Full<Bytes>>) -> Result<Self, Error> {
+    pub fn from_request(request: &Request<Incoming>) -> Result<Self, Error> {
         let access_token_str = Self::read_cookie("__HT_ACCESS_TOKEN", request)
             .ok_or(Error::from("Missing access token"))?;
         let mut access_token = AccessToken::from(&access_token_str)?;
