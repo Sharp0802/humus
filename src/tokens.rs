@@ -32,7 +32,10 @@ pub struct TokenConfig {
 }
 
 impl TokenConfig {
-    fn new(key: &str, secure_cookie: bool) -> Self {
+    ///
+    /// Create new configuration for tokens
+    ///
+    pub fn new(key: &str, secure_cookie: bool) -> Self {
         Self{
             key: key.to_string(),
             secure_cookie
