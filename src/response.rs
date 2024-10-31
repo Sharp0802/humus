@@ -2,8 +2,10 @@
 //! A module that provides abstraction and management of responses
 //!
 
+use hyper::header::{
+    ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_ALLOW_ORIGIN,
+};
 use hyper::{http, Response};
-use hyper::header::{ACCESS_CONTROL_ALLOW_HEADERS, ACCESS_CONTROL_ALLOW_METHODS, ACCESS_CONTROL_ALLOW_ORIGIN};
 use lazy_static::lazy_static;
 use tokio::sync::RwLock;
 
@@ -23,7 +25,7 @@ pub struct ResponseConfig {
     pub access_control_allow_methods: Option<String>,
 
     /// [Access-Control-Allow-Headers](https://fetch.spec.whatwg.org/#http-access-control-allow-headers)
-    pub access_control_allow_headers: Option<String>
+    pub access_control_allow_headers: Option<String>,
 }
 
 impl ResponseConfig {
@@ -34,7 +36,7 @@ impl ResponseConfig {
         Self {
             access_control_allow_origin: None,
             access_control_allow_methods: None,
-            access_control_allow_headers: None
+            access_control_allow_headers: None,
         }
     }
 

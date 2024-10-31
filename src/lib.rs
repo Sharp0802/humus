@@ -11,12 +11,12 @@
 //! - Asynchronous Design
 //!
 
-pub mod terminal;
-pub mod route;
-pub mod response;
-pub mod tokens;
 mod encrypt;
 mod error;
+pub mod response;
+pub mod route;
+pub mod terminal;
+pub mod tokens;
 
 use http_body_util::Full;
 use hyper::body::{Bytes, Incoming};
@@ -25,14 +25,14 @@ use hyper::service::service_fn;
 use hyper::{Request, Response, StatusCode};
 use hyper_util::rt::TokioIo;
 
+use crate::response::ResponseBuilder;
+use crate::route::{configure_all, match_route, shutdown_all, Route};
 use std::convert::Infallible;
 use std::error::Error;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::net::TcpListener;
-use crate::response::ResponseBuilder;
-use crate::route::{configure_all, match_route, shutdown_all, Route};
 
 #[derive(Clone)]
 struct TokioExecutor;
@@ -47,16 +47,14 @@ where
     }
 }
 
-
 /// An abstraction for hosting and routing.
 pub struct App {
     port: u16,
     shutdown_duration: Duration,
-    root_route: Arc<dyn Route + Send + Sync>
+    root_route: Arc<dyn Route + Send + Sync>,
 }
 
 impl App {
-
     ///
     /// Create new application with specified settings
     ///
@@ -73,11 +71,15 @@ impl App {
     /// let app = App::new(8080, Duration::from_secs(10), ...);
     /// ```
     ///
-    pub fn new(port: u16, shutdown_duration: Duration, root_route: Arc<dyn Route + Send + Sync>) -> Self {
+    pub fn new(
+        port: u16,
+        shutdown_duration: Duration,
+        root_route: Arc<dyn Route + Send + Sync>,
+    ) -> Self {
         Self {
             port,
             shutdown_duration,
-            root_route
+            root_route,
         }
     }
 
@@ -87,11 +89,13 @@ impl App {
 
     async fn map(&self, request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Infallible> {
         let route = match match_route(request.uri().path(), self.root_route.clone()) {
-            None => return Ok(ResponseBuilder::new()
-                .status(StatusCode::NOT_FOUND)
-                .body(Full::from(Bytes::new()))
-                .unwrap()),
-            Some(route) => route
+            None => {
+                return Ok(ResponseBuilder::new()
+                    .status(StatusCode::NOT_FOUND)
+                    .body(Full::from(Bytes::new()))
+                    .unwrap())
+            }
+            Some(route) => route,
         };
 
         match route.handle(request).await {
@@ -99,7 +103,7 @@ impl App {
             Err(error) => Ok(ResponseBuilder::new()
                 .status(StatusCode::INTERNAL_SERVER_ERROR)
                 .body(Full::from(error.to_string()))
-                .unwrap())
+                .unwrap()),
         }
     }
 
@@ -134,7 +138,6 @@ impl App {
     /// ```
     ///
     pub async fn main(self: Arc<Self>) -> Result<(), Box<dyn Error + Send + Sync>> {
-
         self.configure().await?;
 
         let addr = SocketAddr::from(([127, 0, 0, 1], self.port));
@@ -142,7 +145,9 @@ impl App {
 
         let graceful = hyper_util::server::graceful::GracefulShutdown::new();
         let mut signal = std::pin::pin!(async {
-            tokio::signal::ctrl_c().await.expect("failed to install CTRL+C signal handler");
+            tokio::signal::ctrl_c()
+                .await
+                .expect("failed to install CTRL+C signal handler");
         });
 
         loop {
@@ -179,7 +184,7 @@ impl App {
                 log!(info "Timed out waiting for connections");
             }
         }
-        
+
         Ok(())
     }
 }

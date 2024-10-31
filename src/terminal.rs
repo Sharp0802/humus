@@ -1,4 +1,3 @@
-
 //!
 //! A module that contains helper functions for terminal/command-line
 //! user interface such as logging system

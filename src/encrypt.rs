@@ -22,7 +22,9 @@ impl Aes {
         let nonce = Aes256Gcm::generate_nonce(&mut OsRng);
 
         let cipher = Aes256Gcm::new(key);
-        let ciphertext = cipher.encrypt(&nonce, plaintext.as_bytes()).map_err(Error::from)?;
+        let ciphertext = cipher
+            .encrypt(&nonce, plaintext.as_bytes())
+            .map_err(Error::from)?;
 
         let mut encrypted_data: Vec<u8> = nonce.to_vec();
         encrypted_data.extend_from_slice(&ciphertext);
@@ -31,7 +33,9 @@ impl Aes {
     }
 
     pub fn decrypt(data: &str, key: &str) -> Result<String, Error> {
-        let ciphertext = base64::prelude::BASE64_STANDARD.decode(data.as_bytes()).map_err(Error::from)?;
+        let ciphertext = base64::prelude::BASE64_STANDARD
+            .decode(data.as_bytes())
+            .map_err(Error::from)?;
 
         let key_hash = Sha256::digest(key);
         let key = Key::<Aes256Gcm>::from_slice(&key_hash);

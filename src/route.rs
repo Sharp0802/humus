@@ -2,11 +2,11 @@
 //! A module that provides abstraction for routes and its helpers
 //!
 
-use std::sync::Arc;
 use async_trait::async_trait;
 use http_body_util::Full;
 use hyper::body::{Bytes, Incoming};
 use hyper::{Request, Response};
+use std::sync::Arc;
 
 ///
 /// An error-type alias for routes
@@ -20,20 +20,26 @@ pub trait Route {
     fn name(&self) -> &str;
 
     /// Get children of route
-    fn children(&self) -> Vec<Arc<dyn Route + Send + Sync>> { vec![] }
+    fn children(&self) -> Vec<Arc<dyn Route + Send + Sync>> {
+        vec![]
+    }
 
     /// Configure route and Initialise its resources
-    async fn configure(&self) -> Result<(), Box<Error>> { Ok(()) }
+    async fn configure(&self) -> Result<(), Box<Error>> {
+        Ok(())
+    }
 
     /// Shutdown route and Finalise its resources
-    async fn shutdown(&self) -> Result<(), Box<Error>> { Ok(()) }
+    async fn shutdown(&self) -> Result<(), Box<Error>> {
+        Ok(())
+    }
 
     /// Handle request asynchronously
-    async fn handle(&self, request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Box<Error>>;
+    async fn handle(&self, request: Request<Incoming>)
+        -> Result<Response<Full<Bytes>>, Box<Error>>;
 }
 
 pub(crate) async fn configure_all(root: Arc<dyn Route + Send + Sync>) -> Result<(), Box<Error>> {
-
     root.configure().await?;
     for route in root.children() {
         route.configure().await?;
@@ -43,7 +49,6 @@ pub(crate) async fn configure_all(root: Arc<dyn Route + Send + Sync>) -> Result<
 }
 
 pub(crate) async fn shutdown_all(root: Arc<dyn Route + Send + Sync>) -> Result<(), Box<Error>> {
-
     root.shutdown().await?;
     for route in root.children() {
         route.shutdown().await?;
@@ -52,8 +57,10 @@ pub(crate) async fn shutdown_all(root: Arc<dyn Route + Send + Sync>) -> Result<(
     Ok(())
 }
 
-pub(crate) fn match_route(path: &str, root: Arc<dyn Route + Send + Sync>) -> Option<Arc<dyn Route + Send + Sync>> {
-
+pub(crate) fn match_route(
+    path: &str,
+    root: Arc<dyn Route + Send + Sync>,
+) -> Option<Arc<dyn Route + Send + Sync>> {
     let parts = path.split("/").skip(1).collect::<Vec<&str>>();
 
     let mut current = root;
@@ -72,7 +79,7 @@ pub(crate) fn match_route(path: &str, root: Arc<dyn Route + Send + Sync>) -> Opt
         }
 
         if !found {
-            return None
+            return None;
         }
     }
 
@@ -84,24 +91,28 @@ mod tests {
     use super::*;
 
     struct RootRoute {
-        route_a: Arc<ARoute>
+        route_a: Arc<ARoute>,
     }
 
     struct ARoute {
-        route_b: Arc<BRoute>
+        route_b: Arc<BRoute>,
     }
 
     struct BRoute;
 
     impl RootRoute {
         fn new() -> Self {
-            Self { route_a: Arc::new(ARoute::new()) }
+            Self {
+                route_a: Arc::new(ARoute::new()),
+            }
         }
     }
 
     impl ARoute {
         fn new() -> Self {
-            Self { route_b: Arc::new(BRoute::new()) }
+            Self {
+                route_b: Arc::new(BRoute::new()),
+            }
         }
     }
 
@@ -113,35 +124,50 @@ mod tests {
 
     #[async_trait]
     impl Route for RootRoute {
-        fn name(&self) -> &str { "" }
-
-        fn children(&self) -> Vec<Arc<dyn Route + Send + Sync>> {
-            vec![ self.route_a.clone() ]
+        fn name(&self) -> &str {
+            ""
         }
 
-        async fn handle(&self, _request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Box<Error>> {
+        fn children(&self) -> Vec<Arc<dyn Route + Send + Sync>> {
+            vec![self.route_a.clone()]
+        }
+
+        async fn handle(
+            &self,
+            _request: Request<Incoming>,
+        ) -> Result<Response<Full<Bytes>>, Box<Error>> {
             panic!()
         }
     }
 
     #[async_trait]
     impl Route for ARoute {
-        fn name(&self) -> &str { "a" }
-
-        fn children(&self) -> Vec<Arc<dyn Route + Send + Sync>> {
-            vec![ self.route_b.clone() ]
+        fn name(&self) -> &str {
+            "a"
         }
 
-        async fn handle(&self, _request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Box<Error>> {
+        fn children(&self) -> Vec<Arc<dyn Route + Send + Sync>> {
+            vec![self.route_b.clone()]
+        }
+
+        async fn handle(
+            &self,
+            _request: Request<Incoming>,
+        ) -> Result<Response<Full<Bytes>>, Box<Error>> {
             panic!()
         }
     }
 
     #[async_trait]
     impl Route for BRoute {
-        fn name(&self) -> &str { "b" }
+        fn name(&self) -> &str {
+            "b"
+        }
 
-        async fn handle(&self, _request: Request<Incoming>) -> Result<Response<Full<Bytes>>, Box<Error>> {
+        async fn handle(
+            &self,
+            _request: Request<Incoming>,
+        ) -> Result<Response<Full<Bytes>>, Box<Error>> {
             panic!()
         }
     }
@@ -151,7 +177,7 @@ mod tests {
         let root = Arc::new(RootRoute::new());
         match match_route("/", root) {
             None => panic!("Couldn't find route for '/'"),
-            Some(route) => assert_eq!(route.name(), "")
+            Some(route) => assert_eq!(route.name(), ""),
         };
     }
 
@@ -160,7 +186,7 @@ mod tests {
         let root = Arc::new(RootRoute::new());
         match match_route("/a/", root) {
             None => panic!("Couldn't find route for '/a/'"),
-            Some(route) => assert_eq!(route.name(), "a")
+            Some(route) => assert_eq!(route.name(), "a"),
         };
     }
 
@@ -169,7 +195,7 @@ mod tests {
         let root = Arc::new(RootRoute::new());
         match match_route("/a/b", root) {
             None => panic!("Couldn't find route for '/b'"),
-            Some(route) => assert_eq!(route.name(), "b")
+            Some(route) => assert_eq!(route.name(), "b"),
         };
     }
 }

@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 use std::ops::Deref;
 use tokio::sync::RwLock;
 
-lazy_static!{
+lazy_static! {
     static ref CONFIG: RwLock<Option<TokenConfig>> = RwLock::new(None);
 }
 
@@ -27,7 +27,7 @@ lazy_static!{
 ///
 pub struct TokenConfig {
     key: String,
-    secure_cookie: bool
+    secure_cookie: bool,
 }
 
 impl TokenConfig {
@@ -35,9 +35,9 @@ impl TokenConfig {
     /// Create new configuration for tokens
     ///
     pub fn new(key: &str, secure_cookie: bool) -> Self {
-        Self{
+        Self {
             key: key.to_string(),
-            secure_cookie
+            secure_cookie,
         }
     }
 
@@ -49,27 +49,25 @@ impl TokenConfig {
     }
 }
 
-
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Token {
     who: String,
     timestamp: i64,
-    nonce: i64
+    nonce: i64,
 }
 
 ///
 /// A struct that represents stateless access-token
 ///
 pub struct AccessToken {
-    inner: Token
+    inner: Token,
 }
 
 ///
 /// A struct that represents stateless refresh-token
 ///
 pub struct RefreshToken {
-    inner: Token
+    inner: Token,
 }
 
 impl Token {
@@ -77,7 +75,7 @@ impl Token {
         Self {
             who: who.to_string(),
             timestamp,
-            nonce: random()
+            nonce: random(),
         }
     }
 
@@ -85,7 +83,7 @@ impl Token {
         let config = CONFIG.blocking_read();
         let key = match config.deref() {
             None => return Err(Error::from("Token system not configured")),
-            Some(config) => config.key.as_ref()
+            Some(config) => config.key.as_ref(),
         };
 
         let decrypted = Aes::decrypt(encrypted, key)?;
@@ -97,7 +95,7 @@ impl Token {
         let config = CONFIG.blocking_read();
         let key = match config.deref() {
             None => return Err(Error::from("Token system not configured")),
-            Some(config) => config.key.as_ref()
+            Some(config) => config.key.as_ref(),
         };
 
         let json = serde_json::to_string(self).unwrap();
@@ -109,13 +107,13 @@ impl Token {
 impl AccessToken {
     fn new(who: &str, timestamp: i64) -> Self {
         Self {
-            inner: Token::new(who, timestamp)
+            inner: Token::new(who, timestamp),
         }
     }
 
     fn from(encrypted: &str) -> Result<Self, Error> {
         Ok(Self {
-            inner: Token::from(encrypted)?
+            inner: Token::from(encrypted)?,
         })
     }
 
@@ -141,13 +139,13 @@ impl AccessToken {
 impl RefreshToken {
     fn new(who: &str, timestamp: i64) -> Self {
         Self {
-            inner: Token::new(who, timestamp)
+            inner: Token::new(who, timestamp),
         }
     }
 
     fn from(encrypted: &str) -> Result<Self, Error> {
         Ok(Self {
-            inner: Token::from(encrypted)?
+            inner: Token::from(encrypted)?,
         })
     }
 
@@ -170,13 +168,12 @@ impl RefreshToken {
     }
 }
 
-
 ///
 /// A struct that represents stateless session token
 ///
 pub struct Session {
     access_token: AccessToken,
-    refresh_token: RefreshToken
+    refresh_token: RefreshToken,
 }
 
 impl Session {
@@ -193,7 +190,7 @@ impl Session {
 
         Self {
             access_token: AccessToken::new(who, timestamp),
-            refresh_token: RefreshToken::new(who, timestamp)
+            refresh_token: RefreshToken::new(who, timestamp),
         }
     }
 
@@ -212,21 +209,31 @@ impl Session {
         let now = Utc::now();
 
         if access_token.who() != refresh_token.who() {
-            return Err(Error::from("Token owner mismatched"))
+            return Err(Error::from("Token owner mismatched"));
         }
 
         // Access tokens are always generated after or at same time with Refresh token
         // If Refresh token's timestamp is later than Access token's one,
         // It may be client reuses refresh token after token refreshed
         if refresh_token.timestamp() > access_token.timestamp() {
-            return Err(Error::from("Refresh token reused"))
+            return Err(Error::from("Refresh token reused"));
         }
 
-        if refresh_token.timestamp().signed_duration_since(now).num_days() > 90 {
-            return Err(Error::from("Refresh token expired"))
+        if refresh_token
+            .timestamp()
+            .signed_duration_since(now)
+            .num_days()
+            > 90
+        {
+            return Err(Error::from("Refresh token expired"));
         }
 
-        if access_token.timestamp().signed_duration_since(now).num_minutes() > 15 {
+        if access_token
+            .timestamp()
+            .signed_duration_since(now)
+            .num_minutes()
+            > 15
+        {
             let timestamp = now.timestamp();
             access_token = AccessToken::new(access_token.who(), timestamp);
             refresh_token = RefreshToken::new(access_token.who(), timestamp);
@@ -234,7 +241,7 @@ impl Session {
 
         Ok(Self {
             access_token,
-            refresh_token
+            refresh_token,
         })
     }
 
@@ -245,10 +252,20 @@ impl Session {
         let secure = CONFIG.blocking_read().as_ref().unwrap().secure_cookie;
 
         Ok(ResponseBuilder::new()
-            .header(SET_COOKIE, CookieBuilder::new("__HT_ACCESS_TOKEN", self.access_token.to_string()?)
-                .http_only(true).secure(secure).to_string())
-            .header(SET_COOKIE, CookieBuilder::new("__HT_REFRESH_TOKEN", self.refresh_token.to_string()?)
-                .http_only(true).secure(secure).to_string()))
+            .header(
+                SET_COOKIE,
+                CookieBuilder::new("__HT_ACCESS_TOKEN", self.access_token.to_string()?)
+                    .http_only(true)
+                    .secure(secure)
+                    .to_string(),
+            )
+            .header(
+                SET_COOKIE,
+                CookieBuilder::new("__HT_REFRESH_TOKEN", self.refresh_token.to_string()?)
+                    .http_only(true)
+                    .secure(secure)
+                    .to_string(),
+            ))
     }
 
     ///
