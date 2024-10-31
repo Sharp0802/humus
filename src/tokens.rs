@@ -93,7 +93,7 @@ impl Token {
 
     fn to_string(&self) -> Result<String, Error> {
         let config = CONFIG.blocking_read();
-        let key = match config.deref().clone() {
+        let key = match config.deref() {
             None => return Err(Error::from("Token system not configured")),
             Some(config) => config.key.as_ref()
         };
