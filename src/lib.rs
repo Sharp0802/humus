@@ -14,6 +14,8 @@
 pub mod terminal;
 pub mod route;
 pub mod response;
+mod encrypt;
+mod error;
 
 use http_body_util::Full;
 use hyper::body::{Bytes, Incoming};
