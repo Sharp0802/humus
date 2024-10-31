@@ -250,4 +250,18 @@ impl Session {
             .header(SET_COOKIE, CookieBuilder::new("__HT_REFRESH_TOKEN", self.refresh_token.to_string()?)
                 .http_only(true).secure(secure).to_string()))
     }
+
+    ///
+    /// Get access token of the session
+    ///
+    pub fn access_token(&self) -> &AccessToken {
+        &self.access_token
+    }
+
+    ///
+    /// Get refresh token of the session
+    ///
+    pub fn refresh_token(&self) -> &RefreshToken {
+        &self.refresh_token
+    }
 }
