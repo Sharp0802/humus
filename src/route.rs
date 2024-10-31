@@ -8,6 +8,9 @@ use http_body_util::Full;
 use hyper::body::{Bytes, Incoming};
 use hyper::{Request, Response};
 
+///
+/// An error-type alias for routes
+///
 pub type Error = dyn std::error::Error + Send + Sync;
 
 /// An abstraction for routes
